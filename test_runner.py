@@ -16,7 +16,7 @@ import os
 import subprocess
 
 # List of input and output file names
-INFILES = ["infile1.txt", "infile2.txt"]
+INFILES = ["test_data/infile1.txt", "test_data/infile2.txt"]
 ALGOS = ["huffman.py"]
 COMMON_ARGS = "python3 {algo} {action} {infile} {outfile}"
 
