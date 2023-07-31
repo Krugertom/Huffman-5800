@@ -4,14 +4,9 @@ python3 test_runner.py
 
 run in command line for writing to csv:
 python3 test_runner.py > compression_runtime.csv
-
-note: my code doesn't handle existing output files yet, not sure if they will be overwritten or cause error, will test tmr;
-if you run into issue with that, delete the encoded and decoded .txt, or make changes to my code if you feel like to! 
 '''
 
-import sys
 import time
-import csv
 import os
 import subprocess
 
@@ -41,6 +36,7 @@ def table_header(format="csv") -> str:
         return ", ".join(header)
      
 '''
+subprocess runs encode and decode on an algo, with result written to corresponding outout files;
 return the runtime of the command in second
 '''
 def timeCommand(cmd) -> float:
@@ -51,10 +47,26 @@ def timeCommand(cmd) -> float:
     # return round(elapsed_time, 5)
     return elapsed_time
 
+'''
+generates command to run an algorithm file, and record the runtime and space data 
+'''
+def runCommand(algo, action, sourceFileName, outFileName, data, originalSizeInBytes=0):
+    cmd = COMMON_ARGS.format(algo = algo, action = action, infile = sourceFileName, outfile = outFileName)
+    runTime = timeCommand(cmd)     # encoded/decode called and output file generated here
+    data.append(runTime)     # record time 
+
+    # space data for encode
+    if action == "encode":
+        encodedSize = count_bytes(outFileName)      
+        data.append(encodedSize)    # record size after encoding 
+        reduced_by = round((originalSizeInBytes - encodedSize) / originalSizeInBytes, 2)
+        data.append(reduced_by)     # record compression effect on size
+
 
 def main():
-    print(table_header())
+    print(table_header())   # column titles in csv format for our run data 
 
+    # run encode/decode on each encoding algo, write result to an output file
     for i, originalFile in enumerate(INFILES):
         infileSizeInBytes = count_bytes(originalFile)
         result = ""
@@ -63,25 +75,14 @@ def main():
             result += originalFile      # append file name for each algo
             data = [infileSizeInBytes]      # append file size for each algo
 
-            # run encode on each encoding algo, write result to an output file
-            encodedFile = f"{originalFile[:-4]}_{algorithm[:-3]}_encoded.txt"
-            encodeCmd = COMMON_ARGS.format(algo = algorithm, action = "encode", infile = originalFile, outfile = encodedFile)
-            encodeTime = timeCommand(encodeCmd)     # encoded file generated here
-            data.append(encodeTime)     # record time 
-            encodedSize = count_bytes(encodedFile)      
-            data.append(encodedSize)    # record size after encoding 
-            reduced_by = round((infileSizeInBytes - encodedSize) / infileSizeInBytes, 2)
-            data.append(reduced_by)     # record compression effect on size
+            encodedFileName = f"{originalFile[:-4]}_{algorithm[:-3]}_encoded.txt"
+            runCommand(algorithm, "encode", originalFile, encodedFileName, data, infileSizeInBytes)
 
-            # run decode on each encoding algo, write result to an output file
-            decodedFile = f"{originalFile[:-4]}_{algorithm[:-3]}_decoded.txt"
-            decodeCmd = COMMON_ARGS.format(algo = algorithm, action = "decode", infile = originalFile, outfile = encodedFile)
-            decodeTime = timeCommand(decodeCmd)
-            data.append(decodeTime)     # record time 
+            decodedFileName = f"{originalFile[:-4]}_{algorithm[:-3]}_decoded.txt"   # generate the filename for decoded txt
+            runCommand(algorithm, "decode", encodedFileName, decodedFileName, data)
 
         result += ", " + ", ".join(str(t) for t in data)    
         print(result)
-
 
 if __name__ == "__main__":
     main()
