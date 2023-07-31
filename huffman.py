@@ -1,6 +1,7 @@
 import heapq
 import os
 import sys
+import json
 
 class HuffmanCoding:
     """Class for handling Huffman coding algorithm, compression, and decompression."""
@@ -121,21 +122,26 @@ class HuffmanCoding:
         return b
 
     def compress(self, text):
-        """Compresses the given text using Huffman coding.
-
-        :param text: The input text.
-        :return: Compressed bytes.
-        """
+        
         frequency = self.make_frequency_dict(text)
         self.make_heap(frequency)
         self.merge_nodes()
         self.make_codes()
 
+        # Serialize the frequency dictionary using JSON
+        frequency_str = json.dumps(frequency)
+        frequency_bytes = frequency_str.encode()
+        frequency_size = len(frequency_bytes)
+        frequency_size_bytes = frequency_size.to_bytes(4, 'big')
+
         encoded_text = self.get_encoded_text(text)
         padded_encoded_text = self.pad_encoded_text(encoded_text)
 
-        b = self.get_byte_array(padded_encoded_text)
-        return bytes(b)
+        # Convert the padded encoded text to bytes
+        padded_encoded_bytes = int(padded_encoded_text, 2).to_bytes((len(padded_encoded_text) + 7) // 8, byteorder='big')
+
+        return frequency_size_bytes + frequency_bytes + padded_encoded_bytes
+
 
     def remove_padding(self, padded_encoded_text):
         """Removes padding from the encoded text.
@@ -167,14 +173,26 @@ class HuffmanCoding:
         return decoded_text
 
     def decompress(self, bit_string):
-        """Decompresses a bit string using the Huffman tree.
+        # Extract the frequency size and frequency information
+        frequency_size = int.from_bytes(bit_string[:4], 'big')
+        frequency_bytes = bit_string[4:4 + frequency_size]
+        frequency_str = frequency_bytes.decode()
 
-        :param bit_string: Encoded bit string.
-        :return: Decompressed text.
-        """
-        encoded_text = self.remove_padding(bit_string)
+        # Deserialize the frequency dictionary using JSON
+        frequency = json.loads(frequency_str)
+
+        # Rebuild the Huffman tree
+        self.make_heap(frequency)
+        self.merge_nodes()
+        self.make_codes()
+
+        # Convert the remaining bit string to binary
+        encoded_text = ''.join(f'{byte:08b}' for byte in bit_string[4 + frequency_size:])
+
+        encoded_text = self.remove_padding(encoded_text)
         decompressed_text = self.decode_text(encoded_text)
         return decompressed_text
+
 
 
 def encode(infile, outfile):
@@ -190,21 +208,11 @@ def encode(infile, outfile):
     compressed_data = huffman.compress(text)
     
     # FOR TESTING PURPOSES -- REMOVE BEFORE SUBMISSION
-    
-    print("~~~~~~~~~~~~~~~~~~~~~~~\n")
-    print(compressed_data)
-    print("~~~~~~~~~~~~~~~~~~~~~~~\n")
-    
-    with open("Tom_test.txt", 'wb') as output:
-        output.write(compressed_data)
-        
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+
+
     with open(outfile, 'wb') as output:
         output.write(compressed_data)
         
-        
-
 
 def decode(infile, outfile):
     """Decodes a file using Huffman coding.
@@ -212,20 +220,15 @@ def decode(infile, outfile):
     :param infile: Path to the input file.
     :param outfile: Path to the output file.
     """
-    with open(infile, 'rb') as input:
-        bit_string = ""
-        byte = input.read(1)
-
-        while byte:
-            bits = bin(byte[0])[2:].rjust(8, '0')
-            bit_string += bits
-            byte = input.read(1)
+    with open(infile, 'rb') as input_file:
+        bit_string = input_file.read()
 
     huffman = HuffmanCoding()
     decompressed_text = huffman.decompress(bit_string)
 
     with open(outfile, 'w') as output:
         output.write(decompressed_text)
+
 
 
 
