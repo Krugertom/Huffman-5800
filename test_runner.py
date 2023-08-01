@@ -1,8 +1,11 @@
 '''
-run without argument to print to command line for testing purpose:
+This script reads from path "test_files", generate compression results to path "encoded" and "decoded";
+before run, make sure all three path exists.
+
+Run without argument to print to command line for testing purpose:
 python3 test_runner.py 
 
-run in command line for writing to csv:
+Run in command line for writing to csv:
 python3 test_runner.py > compression_runtime.csv
 '''
 
@@ -13,8 +16,9 @@ import time
 
 
 # List of input and output file names
-INFILES = ["test_data/infile1.txt", "test_data/infile2.txt"]
 INFILE_PATH = "test_files"
+ENCODED_PATH = "encoded"
+DECODED_PATH = "decoded"
 ALGOS = ["huffman.py"]
 COMMON_ARGS = "python3 {algo} {action} {infile} {outfile}"
 
@@ -54,7 +58,6 @@ def timeCommand(cmd) -> float:
 generates command to run an algorithm file, and record the runtime and space data 
 '''
 def runCommand(algo, action, source_filename, out_filename, data, original_size_bytes=0):
-    print(out_filename)
     cmd = COMMON_ARGS.format(algo = algo, action = action, infile = source_filename, outfile = out_filename)
     runTime = timeCommand(cmd)     # encoded/decode called and output file generated here
     data.append(runTime)     # record time 
@@ -66,12 +69,18 @@ def runCommand(algo, action, source_filename, out_filename, data, original_size_
         reduced_by = round((original_size_bytes - encoded_size_bytes) / original_size_bytes, 2)
         data.append(reduced_by)     # record compression effect on size
 
-
+'''
+generate the output file name for encode/decode for each algorithm
+'''
 def generate_outfile_name(original_file, algo_file, action):
     file, ext = os.path.splitext(os.path.basename(original_file))
     algo, ext = os.path.splitext(os.path.basename(algo_file))
-    outfile = os.path.join(f"{action}d", f"{file}_{algo}_{action}d.txt")
-    return outfile
+    if (action == "encode"):
+        return os.path.join(ENCODED_PATH, f"{file}_{algo}_{action}d.txt")
+    elif (action == "decode"):
+        return os.path.join(DECODED_PATH, f"{file}_{algo}_{action}d.txt")
+    else:
+        exit(1)
 
 def main():
     print(table_header())   # column titles in csv format for our run data 
@@ -84,7 +93,7 @@ def main():
         result = ""
         
         for algorithm in ALGOS:
-            result += original_file      # append file name for each algo
+            result += os.path.basename(original_file)      # append file name for each algo
             data = [original_size_bytes]      # append file size for each algo
 
             encoded_file = generate_outfile_name(original_file, algorithm, "encode")
