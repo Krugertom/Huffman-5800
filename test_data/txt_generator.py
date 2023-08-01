@@ -5,11 +5,14 @@ import requests
 def generate_random_txt(file_count, min_char, max_char):
     
     increments = max_char // file_count
-    
+    count = 0
     for i in range(file_count):
+        count += 1
         current_length = min_char + i * increments
         if current_length > max_char:
             current_length = max_char
+        
+        print(count)
 
         text = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(current_length))
         
@@ -47,9 +50,9 @@ def generate_shakespeare_txt(file_count, min_char, max_char):
 
 def main():
     # -------- TEST ATTRIBUTES ------------
-    file_count = 5
-    min_char = 100
-    max_char = 10000
+    file_count = 2
+    min_char = 1
+    max_char = 5000000
     
     # -------- APP DRIVER -----------------
     generate_random_txt(file_count, min_char, max_char)

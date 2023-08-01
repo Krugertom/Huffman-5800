@@ -11,7 +11,7 @@ import os
 import subprocess
 
 # List of input and output file names
-INFILES = ["test_data/infile1.txt", "test_data/infile2.txt"]
+INFILES = ["test_data/infile_test_shakespeare_1.txt", "test_data/infile_test_1.txt"]
 ALGOS = ["huffman.py"]
 COMMON_ARGS = "python3 {algo} {action} {infile} {outfile}"
 
@@ -59,7 +59,7 @@ def runCommand(algo, action, sourceFileName, outFileName, data, originalSizeInBy
     if action == "encode":
         encodedSize = count_bytes(outFileName)      
         data.append(encodedSize)    # record size after encoding 
-        reduced_by = round((originalSizeInBytes - encodedSize) / originalSizeInBytes, 2)
+        reduced_by = round((originalSizeInBytes - encodedSize) / originalSizeInBytes, 5)
         data.append(reduced_by)     # record compression effect on size
 
 
