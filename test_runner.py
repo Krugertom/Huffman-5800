@@ -13,7 +13,7 @@ import subprocess
 # List of input and output file names
 INFILES = ["test_data/infile_test_shakespeare_1.txt", "test_data/infile_test_1.txt"]
 ALGOS = ["huffman.py"]
-COMMON_ARGS = "python3 {algo} {action} {infile} {outfile}"
+COMMON_ARGS = "python3 {algo} {action} {infile} {outfile} {originalFile}"
 
 # the size of a character is typically considered to be one byte
 def count_bytes(filename):
@@ -50,8 +50,8 @@ def timeCommand(cmd) -> float:
 '''
 generates command to run an algorithm file, and record the runtime and space data 
 '''
-def runCommand(algo, action, sourceFileName, outFileName, data, originalSizeInBytes=0):
-    cmd = COMMON_ARGS.format(algo = algo, action = action, infile = sourceFileName, outfile = outFileName)
+def runCommand(algo, action, sourceFileName, outFileName, data, originalSizeInBytes=0, originalFile=None):
+    cmd = COMMON_ARGS.format(algo = algo, action = action, infile = sourceFileName, outfile = outFileName, originalFile=originalFile)
     runTime = timeCommand(cmd)     # encoded/decode called and output file generated here
     data.append(runTime)     # record time 
 
@@ -79,7 +79,7 @@ def main():
             runCommand(algorithm, "encode", originalFile, encodedFileName, data, infileSizeInBytes)
 
             decodedFileName = f"{originalFile[:-4]}_{algorithm[:-3]}_decoded.txt"   # generate the filename for decoded txt
-            runCommand(algorithm, "decode", encodedFileName, decodedFileName, data)
+            runCommand(algorithm, "decode", encodedFileName, decodedFileName, data, infileSizeInBytes, originalFile)
 
         result += ", " + ", ".join(str(t) for t in data)    
         print(result)
