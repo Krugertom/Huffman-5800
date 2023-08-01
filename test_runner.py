@@ -6,12 +6,15 @@ run in command line for writing to csv:
 python3 test_runner.py > compression_runtime.csv
 '''
 
-import time
+import glob
 import os
 import subprocess
+import time
+
 
 # List of input and output file names
-INFILES = ["test_data/infile_test_shakespeare_1.txt", "test_data/infile_test_1.txt"]
+INFILES = ["test_data/infile1.txt", "test_data/infile2.txt"]
+INFILE_PATH = "test_files"
 ALGOS = ["huffman.py"]
 COMMON_ARGS = "python3 {algo} {action} {infile} {outfile}"
 
@@ -30,9 +33,9 @@ def table_header(format="csv") -> str:
     if format == "csv":
         header = []
         col_titles = "file name, file size, {algo} encode time, {algo} encoded size, size reduced by, {algo} decode time"
-        for each in ALGOS:
-            algoName = each[:-3]
-            header.append(col_titles.format(algo=algoName))
+        for algo_filename in ALGOS:
+            algo = algo_filename[:-3]
+            header.append(col_titles.format(algo=algo))
         return ", ".join(header)
      
 '''
@@ -50,36 +53,45 @@ def timeCommand(cmd) -> float:
 '''
 generates command to run an algorithm file, and record the runtime and space data 
 '''
-def runCommand(algo, action, sourceFileName, outFileName, data, originalSizeInBytes=0):
-    cmd = COMMON_ARGS.format(algo = algo, action = action, infile = sourceFileName, outfile = outFileName)
+def runCommand(algo, action, source_filename, out_filename, data, original_size_bytes=0):
+    print(out_filename)
+    cmd = COMMON_ARGS.format(algo = algo, action = action, infile = source_filename, outfile = out_filename)
     runTime = timeCommand(cmd)     # encoded/decode called and output file generated here
     data.append(runTime)     # record time 
 
     # space data for encode
     if action == "encode":
-        encodedSize = count_bytes(outFileName)      
-        data.append(encodedSize)    # record size after encoding 
-        reduced_by = round((originalSizeInBytes - encodedSize) / originalSizeInBytes, 5)
+        encoded_size_bytes = count_bytes(out_filename)      
+        data.append(encoded_size_bytes)    # record size after encoding 
+        reduced_by = round((original_size_bytes - encoded_size_bytes) / original_size_bytes, 2)
         data.append(reduced_by)     # record compression effect on size
 
+
+def generate_outfile_name(original_file, algo_file, action):
+    file, ext = os.path.splitext(os.path.basename(original_file))
+    algo, ext = os.path.splitext(os.path.basename(algo_file))
+    outfile = os.path.join(f"{action}d", f"{file}_{algo}_{action}d.txt")
+    return outfile
 
 def main():
     print(table_header())   # column titles in csv format for our run data 
 
+    test_files = glob.glob(os.path.join(INFILE_PATH, "*.txt"))  # a list of txt file names in INFILE_PATH
+
     # run encode/decode on each encoding algo, write result to an output file
-    for i, originalFile in enumerate(INFILES):
-        infileSizeInBytes = count_bytes(originalFile)
+    for i, original_file in enumerate(test_files):
+        original_size_bytes = count_bytes(original_file)
         result = ""
         
         for algorithm in ALGOS:
-            result += originalFile      # append file name for each algo
-            data = [infileSizeInBytes]      # append file size for each algo
+            result += original_file      # append file name for each algo
+            data = [original_size_bytes]      # append file size for each algo
 
-            encodedFileName = f"{originalFile[:-4]}_{algorithm[:-3]}_encoded.txt"
-            runCommand(algorithm, "encode", originalFile, encodedFileName, data, infileSizeInBytes)
+            encoded_file = generate_outfile_name(original_file, algorithm, "encode")
+            runCommand(algorithm, "encode", original_file, encoded_file, data, original_size_bytes)
 
-            decodedFileName = f"{originalFile[:-4]}_{algorithm[:-3]}_decoded.txt"   # generate the filename for decoded txt
-            runCommand(algorithm, "decode", encodedFileName, decodedFileName, data)
+            decoded_file = generate_outfile_name(original_file, algorithm, "decode")   # generate the filename for decoded txt
+            runCommand(algorithm, "decode", encoded_file, decoded_file, data)
 
         result += ", " + ", ".join(str(t) for t in data)    
         print(result)
