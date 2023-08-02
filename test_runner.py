@@ -19,8 +19,8 @@ import time
 INFILE_PATH = "test_files"
 ENCODED_PATH = "encoded"
 DECODED_PATH = "decoded"
-ALGOS = ["huffman.py"]
-COMMON_ARGS = "python3 {algo} {action} {infile} {outfile}"
+ALGOS = ["huffman.py", "shannon.py"]
+COMMON_ARGS = "python3 {algo} {action} {infile} {outfile} {original_file}"
 
 # the size of a character is typically considered to be one byte
 def count_bytes(filename):
@@ -35,8 +35,8 @@ def count_bytes(filename):
 # file name, file size, algo1 encode time, algo1 encoded size, size reduced by, algo1 decode time
 def table_header(format="csv") -> str:
     if format == "csv":
-        header = []
-        col_titles = "file name, file size, {algo} encode time, {algo} encoded size, size reduced by, {algo} decode time"
+        header = ["file name"]
+        col_titles = "original file size, {algo} encode time, {algo} encoded size, size reduced by, {algo} decode time"
         for algo_filename in ALGOS:
             algo = algo_filename[:-3]
             header.append(col_titles.format(algo=algo))
@@ -57,8 +57,8 @@ def timeCommand(cmd) -> float:
 '''
 generates command to run an algorithm file, and record the runtime and space data 
 '''
-def runCommand(algo, action, source_filename, out_filename, data, original_size_bytes=0):
-    cmd = COMMON_ARGS.format(algo = algo, action = action, infile = source_filename, outfile = out_filename)
+def runCommand(algo, action, source_filename, out_filename, data, original_size_bytes=0, original_file=None):
+    cmd = COMMON_ARGS.format(algo = algo, action = action, infile = source_filename, outfile = out_filename, original_file = original_file)
     runTime = timeCommand(cmd)     # encoded/decode called and output file generated here
     data.append(runTime)     # record time 
 
@@ -84,26 +84,31 @@ def generate_outfile_name(original_file, algo_file, action):
 
 def main():
     print(table_header())   # column titles in csv format for our run data 
-
     test_files = glob.glob(os.path.join(INFILE_PATH, "*.txt"))  # a list of txt file names in INFILE_PATH
 
     # run encode/decode on each encoding algo, write result to an output file
     for i, original_file in enumerate(test_files):
+        
         original_size_bytes = count_bytes(original_file)
+        
         result = ""
+        result += os.path.basename(original_file)      # append file name for each algo
         
         for algorithm in ALGOS:
-            result += os.path.basename(original_file)      # append file name for each algo
+            
+     
             data = [original_size_bytes]      # append file size for each algo
 
             encoded_file = generate_outfile_name(original_file, algorithm, "encode")
-            runCommand(algorithm, "encode", original_file, encoded_file, data, original_size_bytes)
+            runCommand(algorithm, "encode", original_file, encoded_file, data, original_size_bytes, original_file)
 
             decoded_file = generate_outfile_name(original_file, algorithm, "decode")   # generate the filename for decoded txt
-            runCommand(algorithm, "decode", encoded_file, decoded_file, data)
+            runCommand(algorithm, "decode", encoded_file, decoded_file, data, original_size_bytes, original_file)
 
-        result += ", " + ", ".join(str(t) for t in data)    
+            result += ", " + ", ".join(str(t) for t in data)   
+        
         print(result)
+   
 
 if __name__ == "__main__":
     main()

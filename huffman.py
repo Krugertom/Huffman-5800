@@ -234,11 +234,11 @@ def decode(infile, outfile):
 
 def main():
     """Main function that takes command line arguments for encoding or decoding."""
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 5:
         print("Run with: pypy3 f1.py [encode/decode] infile outfile")
         sys.exit(1)
 
-    action, infile, outfile = sys.argv[1:]
+    action, infile, outfile, original_file = sys.argv[1:]
     if action == "encode":
         encode(infile, outfile)
     elif action == "decode":
