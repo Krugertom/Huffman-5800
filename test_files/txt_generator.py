@@ -19,7 +19,7 @@ def generate_random_txt(file_count, min_char, max_char):
         # Adding new line break after every 100 characters
         text_with_breaks = '\n'.join(text[i:i+100] for i in range(0, current_length, 100))
         
-        with open(f"test_data/infile_test_{i}.txt", "w") as f:
+        with open(f"test_files/infile_test_{i}.txt", "w") as f:
             f.write(text_with_breaks)
 
 def generate_shakespeare_txt(file_count, min_char, max_char):
@@ -45,14 +45,14 @@ def generate_shakespeare_txt(file_count, min_char, max_char):
         # Adding new line break after every 100 characters
         text_with_breaks = '\n'.join(text[i:i+100] for i in range(0, current_length, 100))
         
-        with open(f"test_data/infile_test_shakespeare_{i}.txt", "w") as f:
+        with open(f"test_files/infile_test_shakespeare_{i}.txt", "w") as f:
             f.write(text_with_breaks)
 
 def main():
     # -------- TEST ATTRIBUTES ------------
-    file_count = 10
-    min_char = 1
-    max_char = 10,000,000
+    file_count = 15
+    min_char = 100
+    max_char = 10000000
     
     # -------- APP DRIVER -----------------
     generate_random_txt(file_count, min_char, max_char)

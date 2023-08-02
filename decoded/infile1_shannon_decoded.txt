@@ -1,1 +1,0 @@
-Huffman coding came about as the result of a class project at MIT by its then student, David Huffman.

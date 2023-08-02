@@ -1,3 +1,0 @@
-file name, file size, huffman encode time, huffman encoded size, size reduced by, huffman decode time, file name, file size, shannon encode time, shannon encoded size, size reduced by, shannon decode time
-infile2.txt, 832, 0.02196025848388672, 892, -0.07, 0.018410921096801758, 832, 0.014067888259887695, 3766, -3.53, 0.020160198211669922
-infile1.txt, 101, 0.01805424690246582, 294, -1.91, 0.01712512969970703, 101, 0.014188051223754883, 443, -3.39, 0.015351057052612305

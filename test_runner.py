@@ -89,6 +89,7 @@ def main():
     # run encode/decode on each encoding algo, write result to an output file
     for i, original_file in enumerate(test_files):
         
+        
         original_size_bytes = count_bytes(original_file)
         
         result = ""
