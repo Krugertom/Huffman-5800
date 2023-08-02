@@ -1,4 +1,6 @@
+import sys
 from collections import Counter
+
 
 class ShannonFanoNode:
     def __init__(self, symbol, probability, code=''):
@@ -68,15 +70,6 @@ def assign_codes(node, code, code_table):
     assign_codes(node.right, code + '1', code_table)
 
 
-def pre_order_traversal(node):
-    if node is not None:
-        if node.symbol is not None:
-            print(node.symbol, node.code)
-
-        pre_order_traversal(node.left)
-        pre_order_traversal(node.right)
-
-
 def encode(infile, outfile):
     with open(infile, 'r') as input:
         text = input.read()
@@ -93,7 +86,14 @@ def encode(infile, outfile):
     return code_table
 
 
-def decode(infile, outfile, code_table):
+def decode(infile, outfile, originalFile):
+    with open(originalFile, 'r') as input:
+        text = input.read()
+
+    symbols = list(set(text))
+    symbol_probabilities = calculate_symbol_probabilities(text)
+    code_table = shannon_fano_coding(symbol_probabilities, text)
+
     with open(infile, 'r') as input:
         encode_text = input.read()
 
@@ -117,6 +117,16 @@ def decode(infile, outfile, code_table):
 
 if __name__ == "__main__":
     # Example usage
-    code_table = encode("infile1.txt", "outfile")
-    decode('outfile', 'outfile1', code_table)
+
+    action, infile, outfile, originalFile = sys.argv[1:]
+
+    if action == "encode":
+        encode(infile, outfile)
+
+    elif action == "decode":
+        decode(infile, outfile, originalFile)
+
+    else:
+        print("Invalid action. Use 'encode' or 'decode'.")
+
 
