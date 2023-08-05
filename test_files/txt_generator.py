@@ -50,9 +50,9 @@ def generate_shakespeare_txt(file_count, min_char, max_char):
 
 def main():
     # -------- TEST ATTRIBUTES ------------
-    file_count = 15
-    min_char = 100
-    max_char = 10000000
+    file_count = 1
+    min_char = 100000
+    max_char = 100000
     
     # -------- APP DRIVER -----------------
     generate_random_txt(file_count, min_char, max_char)
